@@ -14,7 +14,8 @@ int countAlarm_1 = 0; // счетчик тревог по пину №1
 int countNorma_0 = 0; // счетчтк норма по пину №0
 int countNorma_1 = 0; // счетчтк норма по пину №1
 
-boolean ALARM = false; // состояние системы, тревога или норма
+boolean ALARM_0 = false; // состояние шлейфа, тревога или норма по пину №0
+boolean ALARM_1 = false; // состояние шлейфа №1
 int NORMA = 50; // порог нормы 
 
 void setup() {
@@ -28,32 +29,37 @@ void setup() {
 }
 
 void loop() {
-  if (analogRead(sensPin_0) > NORMA && ALARM == false){ // если показания датчика выше порога и система находится в состоянии нормы
+  // если показания датчика выше порога и система находится в состоянии нормы
+  if (analogRead(sensPin_0) > NORMA && ALARM_0 == false){ 
     countAlarm_0 += 1; // увеличиваем счетчик тревог
     }
-
-   else if (analogRead(sensPin_0) < NORMA && ALARM == false){ // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+  // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+   else if (analogRead(sensPin_0) < NORMA && ALARM_0 == false){ 
     countAlarm_0 = 0; // присваиваем счетчику значение 0
     } 
 
-  if (countAlarm_0 > 30000){ // если счетчик тревог больше
+  // если счетчик тревог больше
+  if (countAlarm_0 > 30000){ 
     digitalWrite(LEDPin_0, HIGH);
     digitalWrite(SOUNDPin, HIGH);
-    ALARM = true;
+    ALARM_0 = true;
     countAlarm_0 = 0;
     }
 
-  if (analogRead(sensPin_0) < NORMA && ALARM == true){ // если показание датчика ниже порога и система находится в состоянии тревоги
+  // если показание датчика ниже порога и система находится в состоянии тревоги
+  if (analogRead(sensPin_0) < NORMA && ALARM_0 == true){
     countNorma_0 +=1; // увеличиваем счетчик норм
     }
 
-  else if (analogRead(sensPin_0) > NORMA && ALARM == true){ // если счетчик нормы не достигает необходимого значения и датчик показывает тревогу
+  // если счетчик нормы не достигает необходимого значения и датчик показывает тревогу
+  else if (analogRead(sensPin_0) > NORMA && ALARM_0 == true){ 
     countNorma_0 = 0; // присваиваеи счетчику значение 0
     }
 
-  if (countNorma_0 > 30000){ // если счетчик нормы больше
+  // если счетчик нормы больше
+  if (countNorma_0 > 30000){ 
     digitalWrite(LEDPin_0, LOW);
-    ALARM = false;
+    ALARM_0 = false;
     countNorma_0 = 0;
     }
 
