@@ -32,7 +32,6 @@ void setup() {
   pinMode(LEDPin_0, OUTPUT);
   pinMode(LEDPin_1, OUTPUT);
   pinMode(buttonPin, INPUT);
-  pinMode(LEDPin_0, OUTPUT);
   analogReference(DEFAULT); // отчетное напряжение 5В уже по умолчанию
 
 //  Serial.begin(9600); // открываем com порт
