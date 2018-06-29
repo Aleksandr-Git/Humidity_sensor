@@ -193,6 +193,7 @@ void loop() {
   if (digitalRead(SOUNDPin) == HIGH && digitalRead(buttonPin) == HIGH){ 
     digitalWrite(SOUNDPin, LOW);
     }
-//Serial.println(analogRead(sensPin));
+//Serial.println(analogRead(sensPin_0));
 //delay(500);
+
 }
