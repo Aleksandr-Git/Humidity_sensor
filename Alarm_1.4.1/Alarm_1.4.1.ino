@@ -92,7 +92,7 @@ void loop() {
     digitalWrite(SOUNDPin, HIGH);
     ALARM_0 = true;
     countAlarm_0 = 0;
-    Serial.println('Alarm_0');
+    Serial.println("Alarm_0");
     }
 
   // если счетчик тревог датчика №1 больше
@@ -101,7 +101,7 @@ void loop() {
     digitalWrite(SOUNDPin, HIGH);
     ALARM_1 = true;
     countAlarm_1 = 0;
-    Serial.println('Alarm_1');
+    Serial.println("Alarm_1");
     }
 
   // если счетчик тревог датчика №2 больше
@@ -110,7 +110,7 @@ void loop() {
     digitalWrite(SOUNDPin, HIGH);
     ALARM_2 = true;
     countAlarm_2 = 0;
-    Serial.println('Alarm_2');
+    Serial.println("Alarm_2");
     }
 
   // если счетчик тревог датчика №3 больше
@@ -119,7 +119,7 @@ void loop() {
     digitalWrite(SOUNDPin, HIGH);
     ALARM_3 = true;
     countAlarm_3 = 0;
-    Serial.println('Alarm_3');
+    Serial.println("Alarm_3");
     }
 
   // если показание датчика №0 ниже порога и система находится в состоянии тревоги
