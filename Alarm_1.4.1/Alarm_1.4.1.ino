@@ -167,6 +167,7 @@ void loop() {
     digitalWrite(LEDPin_0, LOW);
     ALARM_0 = false;
     countNorma_0 = 0;
+    Serial.println("Norma_0");
     }
 
   // если счетчик нормы датчика №1 больше
@@ -174,6 +175,7 @@ void loop() {
     digitalWrite(LEDPin_1, LOW);
     ALARM_1 = false;
     countNorma_1 = 0;
+    Serial.println("Norma_1");
     }
 
   // если счетчик нормы датчика №2 больше
@@ -181,6 +183,7 @@ void loop() {
     digitalWrite(LEDPin_2, LOW);
     ALARM_2 = false;
     countNorma_2 = 0;
+    Serial.println("Norma_2");
     }
 
   // если счетчик нормы датчика №3 больше
@@ -188,6 +191,7 @@ void loop() {
     digitalWrite(LEDPin_3, LOW);
     ALARM_3 = false;
     countNorma_3 = 0;
+    Serial.println("Norma_3");
     }
 
 	// если звук включен, выключаем его по нажатию кнопки
