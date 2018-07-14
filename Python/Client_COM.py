@@ -30,7 +30,7 @@ def pochta(body, text_msg):
     smtpObj.quit()  # разрыв соединеиня с сервером
 
 #ser = serial.Serial('/dev/ttyUSB0')  # open serial port
-ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к порту
+ser = serial.Serial('COM4', 9600, timeout=1)  # подключаемся к порту
 print(ser.name)  # печатаем COM порт
 #ser.write(b'hello')     # write a string
 

@@ -1,5 +1,4 @@
-# !!! не работает сообщение о обрыве связи с контроллером на Leonardo
-# переписать через словари
+# !!! не работает сообщение о обрыве связи с контроллером
 # добавлена отправка сообщений по почте
 # письмо отправляется через отдельный поток
 # !!! убрать проверку на Alarm для тестов
@@ -52,52 +51,76 @@ try:
         if len(data) > 0:
             print('Показания датчика', data.decode().rstrip())
 
-        if b'Alarm' in data and ALARM_0 == False:  # для тестов
-            text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик TEST'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#        if b'Alarm' in data and ALARM_0 == False:  # для тестов
+#            text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик №1'.encode('utf-8'), _charset='utf-8')  # текст письма
+#            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
 #            th_alarm = Thread(target=pochta, args=(body, text_msg_alarm))  # открываем отдельный поток и запускаем функцию оптравки почты
 #            th_alarm.start()
-            ALARM_0 = True
+#            ALARM_0 = True
 #            th_alarm.join()
 
-        elif b'Alarm_0' in data and ALARM_0 == False:
+        if b'Alarm_0' in data and ALARM_0 == False:
             text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик №1'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_alarm = Thread(target=pochta, args=(body, text_msg_alarm))
+            th_alarm.start()
+            th_alarm.join()
             ALARM_0 = True
 
         elif b'Alarm_1' in data and ALARM_1 == False:
             text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик №2'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_alarm = Thread(target=pochta, args=(body, text_msg_alarm))
+            th_alarm.start()
+            th_alarm.join()
             ALARM_1 = True
 
         elif b'Alarm_2' in data and ALARM_2 == False:
             text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик №3'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_alarm = Thread(target=pochta, args=(body, text_msg_alarm))
+            th_alarm.start()
+            th_alarm.join()
             ALARM_2 = True
 
         elif b'Alarm_3' in data and ALARM_3 == False:
             text_msg_alarm = MIMEText('\n ТРЕВОГА!!! Датчик №4'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_alarm = Thread(target=pochta, args=(body, text_msg_alarm))
+            th_alarm.start()
+            th_alarm.join()
             ALARM_3 = True
 
-        if b'Norma_0' in data and ALARM_0 == True:
+        elif b'Norma_0' in data and ALARM_0 == True:
             text_msg_norma = MIMEText('\n Возврат в НОРМУ!!! Датчик №1'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_norma = Thread(target=pochta, args=(body, text_msg_norma))
+            th_norma.start()
+            th_norma.join()
             ALARM_0 = False
 
         elif b'Norma_1' in data and ALARM_1 == True:
             text_msg_norma = MIMEText('\n Возврат в НОРМУ!!! Датчик №2'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_norma = Thread(target=pochta, args=(body, text_msg_norma))
+            th_norma.start()
+            th_norma.join()
             ALARM_1 = False
 
         elif b'Norma_2' in data and ALARM_2 == True:
             text_msg_norma = MIMEText('\n Возврат в НОРМУ!!! Датчик №3'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_norma = Thread(target=pochta, args=(body, text_msg_norma))
+            th_norma.start()
+            th_norma.join()
             ALARM_2 = False
 
         elif b'Norma_3' in data and ALARM_3 == True:
             text_msg_norma = MIMEText('\n Возврат в НОРМУ!!! Датчик №4'.encode('utf-8'), _charset='utf-8')  # текст письма
-            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            Thread(target=pochta, args=(body, text_msg_norma)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            th_norma = Thread(target=pochta, args=(body, text_msg_norma))
+            th_norma.start()
+            th_norma.join()
             ALARM_3 = False
 
         print('TEST')
