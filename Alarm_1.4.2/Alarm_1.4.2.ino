@@ -1,4 +1,11 @@
+// добавлен отдельный поток на включение зумера, нужно разобраться как он отклюается
+
+#include <Thread.h>
+
 // написать отдельный поток для зумера
+
+Thread soundThread = Thread(); // поток управления сиреной
+Thread sensorThread = Thread(); // поток для датчиков
 
 int sensPin_0 = 0; // аналоговый пин датчика №0
 int sensPin_1 = 1; // аналоговый пин датчика №1
@@ -49,6 +56,9 @@ void setup() {
   analogReference(DEFAULT); // отчетное напряжение 5В уже по умолчанию
 
   Serial.begin(9600); // открываем com порт
+
+  soundThread.onRun(sound);
+//  soundThread.setInterval(20);
 }
 
 void loop() {
@@ -88,16 +98,19 @@ void loop() {
   // если счетчик тревог датчика №0 больше
   if (countAlarm_0 > 300){ 
     digitalWrite(LEDPin_0, HIGH);
-    digitalWrite(SOUNDPin, HIGH);
+//    digitalWrite(SOUNDPin, HIGH);
+    soundThread.run();
     ALARM_0 = true;
     countAlarm_0 = 0;
     Serial.println("Alarm_0");
+    
     }
 
   // если счетчик тревог датчика №1 больше
   if (countAlarm_1 > 300){ 
     digitalWrite(LEDPin_1, HIGH);
-    digitalWrite(SOUNDPin, HIGH);
+//    digitalWrite(SOUNDPin, HIGH);
+    soundThread.run();
     ALARM_1 = true;
     countAlarm_1 = 0;
     Serial.println("Alarm_1");
@@ -106,7 +119,8 @@ void loop() {
   // если счетчик тревог датчика №2 больше
   if (countAlarm_2 > 300){ 
     digitalWrite(LEDPin_2, HIGH);
-    digitalWrite(SOUNDPin, HIGH);
+    soundThread.run();
+    //digitalWrite(SOUNDPin, HIGH);
     ALARM_2 = true;
     countAlarm_2 = 0;
     Serial.println("Alarm_2");
@@ -115,7 +129,8 @@ void loop() {
   // если счетчик тревог датчика №3 больше
   if (countAlarm_3 > 300){ 
     digitalWrite(LEDPin_3, HIGH);
-    digitalWrite(SOUNDPin, HIGH);
+    soundThread.run();
+    //digitalWrite(SOUNDPin, HIGH);
     ALARM_3 = true;
     countAlarm_3 = 0;
     Serial.println("Alarm_3");
@@ -201,3 +216,14 @@ void loop() {
 //delay(500);
 
 }
+
+void sound() { 
+  static int ton = 100;  // тональность звука, Гц
+  tone(SOUNDPin, ton);  // включаем сирену на "ton" Гц
+  if (ton <= 500) {  // до частоты 500 Гц 
+    ton += 100;  // увеличиваем тональность сирены
+    }
+  else {  // по достижении 500 Гц
+    ton = 100;  // сбрасываем тональность до 100 Гц
+    }
+  }
