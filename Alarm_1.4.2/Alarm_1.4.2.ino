@@ -1,4 +1,4 @@
-// добавлен отдельный поток на включение зумера, нужно разобраться как он отклюается
+// добавлен отдельный поток на включение зумера
 
 #include <Thread.h>
 
@@ -38,7 +38,12 @@ boolean ALARM_1 = false;
 boolean ALARM_2 = false;
 boolean ALARM_3 = false;
 
+boolean SOUND_Alarm = false;
+
 int NORMA = 50; // порог нормы 
+
+static int ton = 1;  // тональность звука, Гц
+static bool soundStatus = false; // переменная для контроля состояния звука
 
 void setup() {
   pinMode(sensPin_0, INPUT);
@@ -57,11 +62,17 @@ void setup() {
 
   Serial.begin(9600); // открываем com порт
 
-  soundThread.onRun(sound);
-//  soundThread.setInterval(20);
+  soundThread.onRun(sound); // назначаем потоку задачу
+  soundThread.setInterval(500);// задаём интервал срабатывания, мсек
 }
 
 void loop() {
+
+// если тревога и прошло время интервала потока, запускается поток со звуком
+    if (SOUND_Alarm == true && soundThread.shouldRun()){
+    soundThread.run();
+    }
+  
   // если показания датчика выше порога и система находится в состоянии нормы
   if (analogRead(sensPin_0) > NORMA && ALARM_0 == false){ 
     countAlarm_0 += 1; // увеличиваем счетчик тревог
@@ -99,18 +110,19 @@ void loop() {
   if (countAlarm_0 > 300){ 
     digitalWrite(LEDPin_0, HIGH);
 //    digitalWrite(SOUNDPin, HIGH);
-    soundThread.run();
+    SOUND_Alarm = true;
+//    soundThread.run();
     ALARM_0 = true;
-    countAlarm_0 = 0;
-    Serial.println("Alarm_0");
-    
+    countAlarm_0 = 0;    
+    Serial.println("Alarm_0");  
     }
 
   // если счетчик тревог датчика №1 больше
   if (countAlarm_1 > 300){ 
     digitalWrite(LEDPin_1, HIGH);
 //    digitalWrite(SOUNDPin, HIGH);
-    soundThread.run();
+    SOUND_Alarm = true;  
+//    soundThread.run();
     ALARM_1 = true;
     countAlarm_1 = 0;
     Serial.println("Alarm_1");
@@ -121,6 +133,7 @@ void loop() {
     digitalWrite(LEDPin_2, HIGH);
     soundThread.run();
     //digitalWrite(SOUNDPin, HIGH);
+//    SOUND_Alarm = true;    
     ALARM_2 = true;
     countAlarm_2 = 0;
     Serial.println("Alarm_2");
@@ -131,6 +144,7 @@ void loop() {
     digitalWrite(LEDPin_3, HIGH);
     soundThread.run();
     //digitalWrite(SOUNDPin, HIGH);
+//    SOUND_Alarm = true;   
     ALARM_3 = true;
     countAlarm_3 = 0;
     Serial.println("Alarm_3");
@@ -209,21 +223,25 @@ void loop() {
     }
 
 	// если звук включен, выключаем его по нажатию кнопки
-  if (digitalRead(SOUNDPin) == HIGH && digitalRead(buttonPin) == HIGH){ 
+//  if (digitalRead(SOUNDPin) == HIGH && digitalRead(buttonPin) == HIGH){ 
+//    digitalWrite(SOUNDPin, LOW);
+//    }
+
+// при нажатии на кнопку звук выключается  
+  if (digitalRead(buttonPin) == HIGH){
+    SOUND_Alarm = false;
     digitalWrite(SOUNDPin, LOW);
     }
+
 //Serial.println(analogRead(sensPin_0));
 //delay(500);
 
 }
 
-void sound() { 
-  static int ton = 100;  // тональность звука, Гц
-  tone(SOUNDPin, ton);  // включаем сирену на "ton" Гц
-  if (ton <= 500) {  // до частоты 500 Гц 
-    ton += 100;  // увеличиваем тональность сирены
-    }
-  else {  // по достижении 500 Гц
-    ton = 100;  // сбрасываем тональность до 100 Гц
-    }
-  }
+// поочередно включает и выключает звук
+void sound(){
+  soundStatus = !soundStatus;
+  digitalWrite(SOUNDPin, soundStatus);
+}
+
+  
