@@ -131,9 +131,8 @@ void loop() {
   // если счетчик тревог датчика №2 больше
   if (countAlarm_2 > 300){ 
     digitalWrite(LEDPin_2, HIGH);
-    soundThread.run();
     //digitalWrite(SOUNDPin, HIGH);
-//    SOUND_Alarm = true;    
+    SOUND_Alarm = true;    
     ALARM_2 = true;
     countAlarm_2 = 0;
     Serial.println("Alarm_2");
@@ -142,9 +141,8 @@ void loop() {
   // если счетчик тревог датчика №3 больше
   if (countAlarm_3 > 300){ 
     digitalWrite(LEDPin_3, HIGH);
-    soundThread.run();
     //digitalWrite(SOUNDPin, HIGH);
-//    SOUND_Alarm = true;   
+    SOUND_Alarm = true;   
     ALARM_3 = true;
     countAlarm_3 = 0;
     Serial.println("Alarm_3");
