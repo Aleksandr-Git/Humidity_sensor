@@ -64,8 +64,9 @@ def UID_new_email():  # выполняет проверку наличия но�
         return last_uid  # возвращаем последний UID письма
 
     else:
-        print('Новых писем нет')
+#        print('Новых писем нет')
         return False
+#        return UID_new_email()
 
 # text_msg = MIMEText('\n Тук-тук, проснись Нео, ты увяз в Матрице!'.encode('utf-8'), _charset='utf-8')  # текст письма
 
@@ -83,29 +84,76 @@ ser = serial.Serial('COM4', 9600, timeout=1)  # подключаемся к по
 print(ser.name)  # печатаем COM порт
 # ser.write(b'hello')     # write a string
 
-try:
-    while True:
-        data = ser.readline()  # читаем строку
+def Alarm():
+    data = ser.readline()  # читаем строку
+#       print(data)
+#       if len(data) > 0:
+#           print('Показания датчика', data.decode().rstrip())
+    for i, j in dict_Alarm.items():
+        if data.decode().rstrip() == i:
+            print(j[0])
+            text_msg_alarm = MIMEText(j[0].encode('utf-8'), _charset='utf-8')  # текст письма
+            Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#               ALARM_0 = True
+#    return Alarm()
+#    print('TEST')  # для тестов
+'''
+while True:
+    try:
+        Alarm()
 
-#        print(data)
-#        if len(data) > 0:
-#            print('Показания датчика', data.decode().rstrip())
+    except serial.serialutil.SerialException:
+        print('Потеряна связь с контроллером!')
+        text_msg = MIMEText('\n Потеряна связь с контроллером!'.encode('utf-8'), _charset='utf-8')  # текст письма
+#        Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+        Thread_ERROR_serial = Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+        Thread_ERROR_serial.start()
+        Thread_ERROR_serial.join()
 
-        for i, j in dict_Alarm.items():
-            if data.decode().rstrip() == i:
-                print(j[0])
-                text_msg_alarm = MIMEText(j[0].encode('utf-8'), _charset='utf-8')  # текст письма
-                Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
-#                ALARM_0 = True
-
-        print('TEST')  # для тестов
+    try:
         UID_new_email()
 
-except serial.serialutil.SerialException:
-    print('Потеряна связь с контроллером!')
-    text_msg = MIMEText('\n Потеряна связь с контроллером!'.encode('utf-8'), _charset='utf-8')  # текст письма
-    Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
-#    pochta(body, text_msg)
+    except Exception:
+        print('ERROR POST')
+        M = IMAP4_SSL('imap.mail.ru')
+        M.login('ffgg-1981@mail.ru', 'Asdf210781')
+        msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
+        continue
+'''
 
-finally:
-    ser.close()  # закрываем соединение
+def Start_Alarm():  # запускает функцию Alarm в бесконечном цикле
+    while True:
+        try:
+            Alarm()
+
+        except serial.serialutil.SerialException:
+            print('Потеряна связь с контроллером!')
+            text_msg = MIMEText('\n Потеряна связь с контроллером!'.encode('utf-8'), _charset='utf-8')  # текст письма
+#            Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            Thread_ERROR_serial = Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+            Thread_ERROR_serial.start()
+            Thread_ERROR_serial.join()
+
+def Start_UID_new_email():  # запускает функцию UID_new_email в бесконечном цикле
+    global M, msgs
+    while True:
+        try:
+            UID_new_email()
+
+        except Exception:
+            print('ERROR POST')
+            M = IMAP4_SSL('imap.mail.ru')
+            M.login('ffgg-1981@mail.ru', 'Asdf210781')
+            msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
+            continue
+
+
+thread1 = Thread(target=Start_Alarm)
+thread2 = Thread(target=Start_UID_new_email)
+
+
+thread1.start()
+thread2.start()
+
+thread1.join()
+thread2.join()
