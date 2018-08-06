@@ -70,6 +70,44 @@ def UID_new_email():  # выполняет проверку наличия но�
 
 # text_msg = MIMEText('\n Тук-тук, проснись Нео, ты увяз в Матрице!'.encode('utf-8'), _charset='utf-8')  # текст письма
 
+def new_email(last_uid):  # выполняет проверку письма на соответствие
+    global UID
+
+    UID = last_uid.decode()  # присваиваем новый UID
+    typ_data_uid, message_data_uid = M.uid('fetch', last_uid,
+                                           '(RFC822)')  # получаем все разделы письма в байтах в виде списка через UID
+    msg_full_uid = email.message_from_bytes(message_data_uid[0][1])  # преобразуем байты в строки
+    # print(typ_data_uid)
+    # print(message_data_uid)
+    FROM = msg_full_uid.get_all('FROM')  # записываем данные из раздела FROM в переменную FROM
+    SUBJECT = msg_full_uid.get('SUBJECT')  # записываем данные из раздела SUBJECT в переменную SUBJECT
+    # msg_full.add_header('Test', 'ON')
+    # TEST = msg_full.get('Test')
+
+    if SENDER in FROM[0] and SUBJECT == SUBJECT_request:  # если отпраывитель и тема совпадают
+
+        print('Есть новое письмо!', last_uid)
+        # print(M.uid('fetch', last_uid, '(UID BODY[TEXT])'))
+        raw_body = M.uid('fetch', last_uid, '(UID BODY[TEXT])')  # запрашиваем сырое тело письма
+        body = raw_body[1][0][1].decode().split('\r\n')  # тело письма, разбитое на строки в список
+        # print(body)
+
+        for i in body:
+            # print(i)
+
+            try:
+                # j = base64.b64decode(i).decode()
+                print(base64.b64decode(i).decode())
+                if 'Калькулятор' in base64.b64decode(i).decode():  # если команда присутсвует в теле письма
+                    # print('Команда распознана')
+                    with open('./UID_email.txt', 'w') as file:
+                        file.write(UID)  # записываем новый UID в файл, в котором хранится последний UID
+                    return threading.Thread(target=os.system, args=('C:/Windows/system32/calc',)).start()  # открывает новый поток и выполняет команду
+                    break
+
+            except Exception:
+                continue
+
 def pochta(body, text_msg):
     smtpObj = smtplib.SMTP('smtp.gmail.com',
                            587)  # установка соединения с почтовым сервером по протоколу SMTP, порт для сервера gmail 587
