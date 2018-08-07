@@ -1,3 +1,4 @@
+# !!! добавить описания к функциям
 # !!! добавить запрос по почте и разделить на потки запрос и чтение com порта
 # !!! добавить обработчик ошибок для запроса по почте
 # !!! не работает сообщение о обрыве связи с контроллером на Leonardo совместно с Windows
@@ -8,10 +9,13 @@
 
 import smtplib
 from email.mime.text import MIMEText
+import email.message
 import serial
 import base64
 from threading import Thread
 from imaplib import IMAP4_SSL
+import time
+import os
 
 dict_Alarm = {'Alarm_0': ['\n ТРЕВОГА!!! Датчик №0'],
               'Alarm_1': ['\n ТРЕВОГА!!! Датчик №1'],
@@ -89,20 +93,23 @@ def new_email(last_uid):  # выполняет проверку письма н�
         print('Есть новое письмо!', last_uid)
         # print(M.uid('fetch', last_uid, '(UID BODY[TEXT])'))
         raw_body = M.uid('fetch', last_uid, '(UID BODY[TEXT])')  # запрашиваем сырое тело письма
-        body = raw_body[1][0][1].decode().split('\r\n')  # тело письма, разбитое на строки в список
+        body_mail = raw_body[1][0][1].decode().split('\r\n')  # тело письма, разбитое на строки в список
         # print(body)
 
-        for i in body:
+        for i in body_mail:
             # print(i)
 
             try:
                 # j = base64.b64decode(i).decode()
                 print(base64.b64decode(i).decode())
-                if 'Калькулятор' in base64.b64decode(i).decode():  # если команда присутсвует в теле письма
+                if 'Показания' in base64.b64decode(i).decode():  # если команда присутсвует в теле письма
                     # print('Команда распознана')
                     with open('./UID_email.txt', 'w') as file:
                         file.write(UID)  # записываем новый UID в файл, в котором хранится последний UID
-                    return threading.Thread(target=os.system, args=('C:/Windows/system32/calc',)).start()  # открывает новый поток и выполняет команду
+#                    return Thread(target=os.system, args=('C:/Windows/system32/calc',)).start()  # открывает новый поток и выполняет команду
+
+                    text_msg_test = MIMEText('\n Здесь должны быть показания датчиков!'.encode('utf-8'), _charset='utf-8')
+                    Thread(target=pochta, args=(body, text_msg_test)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
                     break
 
             except Exception:
@@ -149,19 +156,17 @@ def Start_Alarm():  # запускает функцию Alarm в бесконе�
             Thread_ERROR_serial.start()
             Thread_ERROR_serial.join()
 
-def Start_UID_new_email():  # запускает функцию UID_new_email в бесконечном цикле
-    global M, msgs
+def Start_UID_new_email():
     while True:
         try:
-            UID_new_email()
+            time.sleep(5)  # задержка программы на 5 секунд
+
+            if UID_new_email() != False:  # если есть новое письмо
+                new_email(last_uid)
 
         except Exception:
             print('ERROR POST')  # для тестов
-            M = IMAP4_SSL('imap.mail.ru')
-            M.login('ffgg-1981@mail.ru', 'Asdf210781')
-            msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
             continue
-
 
 thread1 = Thread(target=Start_Alarm)
 thread2 = Thread(target=Start_UID_new_email)
@@ -172,3 +177,4 @@ thread2.start()
 
 thread1.join()
 thread2.join()
+
