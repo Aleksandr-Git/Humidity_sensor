@@ -111,23 +111,19 @@ def pochta(body, text_msg):  # отправляет сообщение на по
     smtpObj.quit()  # разрыв соединеиня с сервером
 
 def Alarm():  # проверяет данные с COM порта и отправляет сообщения на почту
-    data = ser.readline()  # читаем строку с COM порта
+    global DATA
+
+    DATA = ser.readline()  # читаем строку с COM порта
 
     for i, j in dict_Alarm.items():  # перебираем словарь с сообщениями
-        if data.decode().rstrip() == i:  # если даные с COM порта есть в словаре сообщений
+        if DATA.decode().rstrip() == i:  # если даные с COM порта есть в словаре сообщений
             print(j[0])  # для тестов
             text_msg_alarm = MIMEText(j[0].encode('utf-8'), _charset='utf-8')  # формируем текст письма
             Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
 
 
 def Start_Alarm():  # запускает функцию Alarm в бесконечном цикле
-
-    global DATA
-
     while True:
-        DATA = ser.readline()  # читаем данные с COM порта
-        DATA = DATA.decode().rstrip()  # убираем лишнее
-
         try:
             Alarm()
 
@@ -139,15 +135,21 @@ def Start_Alarm():  # запускает функцию Alarm в бесконе�
 #            Thread_ERROR_serial.join()
 
 def Start_UID_new_email():  # проверка новых писем
+    global msgs, M
+
     while True:
         try:
             time.sleep(5)  # задержка программы на 5 секунд
 
             if UID_new_email() != False:  # если есть новое письмо
                 new_email(last_uid)
+            print('ok')  # для тестов
 
         except Exception:
             print('ERROR POST')  # для тестов
+            M = IMAP4_SSL('imap.mail.ru')
+            M.login('ffgg-1981@mail.ru', 'Asdf210781')
+            msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
             continue
 
 thread1 = Thread(target=Start_Alarm)
