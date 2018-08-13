@@ -64,7 +64,7 @@ def UID_new_email():  # выполняет проверку наличия но�
     typ_message_uid, list_message_uid = M.uid('search', None, 'ALL')  # получаем список UID писем
     last_uid = list_message_uid[0].split()[-1]  # определяем UID последнего письма
 
-    if last_uid.decode() != UID:  # если UID последнего письма не равен UID из файла
+    if last_uid.decode() != UID and last_uid.decode() != 'error' and UID != 'error':  # если UID последнего письма не равен UID из файла
         print(last_uid.decode(), UID)  # для тестов
         return last_uid  # возвращаем последний UID письма
 
