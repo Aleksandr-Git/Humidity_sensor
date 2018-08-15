@@ -48,10 +48,22 @@ M = IMAP4_SSL('imap.mail.ru')  # почтовый сервер
 M.login('ffgg-1981@mail.ru', 'Asdf210781')  # адрес почты для запроса. подключаемся
 msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
 
-# ser = serial.Serial('/dev/ttyUSB0')  # для linux
-ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
-print(ser.name)  # печатаем номер COM порта
-# ser.write(b'hello')     # для тестов
+CONNECT = True
+
+def Con_ser():
+    global CONNECT, ser
+
+    try:
+        # ser = serial.Serial('/dev/ttyUSB0')  # для linux
+        ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
+        print(ser.name)  # печатаем номер COM порта
+        CONNECT = True
+        return ser
+        # ser.write(b'hello')     # для тестов
+
+    except serial.serialutil.SerialException:
+        Con_ser()
+
 DATA = b''  # переменная для записи данных с COM порта
 
 def UID_new_email():  # выполняет проверку наличия новых писем
@@ -125,12 +137,12 @@ def Alarm():  # проверяет данные с COM порта и отпра�
 
 
 def Start_Alarm():  # запускает функцию Alarm в бесконечном цикле
-    global ser
+    global ser, CONNECT
+    Con_ser()
 
     while True:
         try:
             Alarm()
-            connect = True
 
         except serial.serialutil.SerialException:
             if connect == True:
@@ -138,6 +150,7 @@ def Start_Alarm():  # запускает функцию Alarm в бесконе�
                 text_msg = MIMEText('\n Потеряна связь с контроллером!'.encode('utf-8'), _charset='utf-8')  # текст письма
                 Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
                 connect = False
+                Con_ser()
 #            ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
 # Thread_ERROR_serial = Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
 #            Thread_ERROR_serial.start()
