@@ -1,5 +1,5 @@
 # !!! не работает сообщение о обрыве связи с контроллером на Leonardo совместно с Windows
-# !!! придумать как подключаться после обрыва связи
+# !!! вроде как работает подключение после обрыва
 # добавить копку тест для оотправки показаний
 # переписано через словари
 # добавлена отправка сообщений по почте
@@ -48,11 +48,16 @@ M = IMAP4_SSL('imap.mail.ru')  # почтовый сервер
 M.login('ffgg-1981@mail.ru', 'Asdf210781')  # адрес почты для запроса. подключаемся
 msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
 
-# ser = serial.Serial('/dev/ttyUSB0')  # для linux
-ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
-print(ser.name)  # печатаем номер COM порта
-# ser.write(b'hello')     # для тестов
-DATA = b''  # переменная для записи данных с COM порта
+CONNECT = True
+
+def Con_ser():
+    global CONNECT, ser
+
+    # ser = serial.Serial('/dev/ttyUSB0')  # для linux
+    ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
+    print(ser.name)  # печатаем номер COM порта
+    CONNECT = True
+    return ser
 
 def UID_new_email():  # выполняет проверку наличия новых писем
     global UID, last_uid
@@ -123,25 +128,22 @@ def Alarm():  # проверяет данные с COM порта и отпра�
             text_msg_alarm = MIMEText(j[0].encode('utf-8'), _charset='utf-8')  # формируем текст письма
             Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
 
-
 def Start_Alarm():  # запускает функцию Alarm в бесконечном цикле
-    global ser
+    global ser, CONNECT
 
     while True:
         try:
-            Alarm()
-            connect = True
+            Con_ser()  #подключаемся по COM порту
+
+            while True:
+                Alarm()
 
         except serial.serialutil.SerialException:
-            if connect == True:
+            if CONNECT == True:
                 print('Потеряна связь с контроллером!')
                 text_msg = MIMEText('\n Потеряна связь с контроллером!'.encode('utf-8'), _charset='utf-8')  # текст письма
                 Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
-                connect = False
-#            ser = serial.Serial('COM6', 9600, timeout=1)  # подключаемся к COM порту
-# Thread_ERROR_serial = Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
-#            Thread_ERROR_serial.start()
-#            Thread_ERROR_serial.join()
+                CONNECT = False
 
 def Start_UID_new_email():  # проверка новых писем
     global msgs, M
@@ -163,7 +165,6 @@ def Start_UID_new_email():  # проверка новых писем
 
 thread1 = Thread(target=Start_Alarm)
 thread2 = Thread(target=Start_UID_new_email)
-
 
 thread1.start()
 thread2.start()
