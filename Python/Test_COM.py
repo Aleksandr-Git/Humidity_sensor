@@ -1,6 +1,8 @@
+# работает восстановление после орыва связи
+
 import serial
 
-DATA = b''
+#DATA = b'1'
 
 def Con_ser():
     global CONNECT, ser
@@ -22,10 +24,13 @@ def Alarm():  # проверяет данные с COM порта и отпра�
     DATA = ser.readline()  # читаем строку с COM порта
     print(DATA)
 
-Con_ser()
+#Con_ser()
 
 while True:
     try:
-        Alarm()
+        Con_ser()
+        while True:
+            Alarm()
     except serial.serialutil.SerialException:
+        continue
         Con_ser()
