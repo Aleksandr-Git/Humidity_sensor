@@ -58,10 +58,6 @@ def Con_ser():
     print(ser.name)  # печатаем номер COM порта
     CONNECT = True
     return ser
-    # ser.write(b'hello')     # для тестов
-
-
-#DATA = b''  # переменная для записи данных с COM порта
 
 def UID_new_email():  # выполняет проверку наличия новых писем
     global UID, last_uid
