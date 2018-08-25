@@ -149,6 +149,9 @@ def Start_Alarm():  # запускает функцию Alarm в бесконе�
                 Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
                 CONNECT = False
 
+        except UnicodeDecodeError:
+            continue
+
 def Start_UID_new_email():  # проверка новых писем
     global msgs, M
 
