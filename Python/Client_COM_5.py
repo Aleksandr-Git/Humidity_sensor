@@ -227,6 +227,7 @@ def Start_UID_new_email():  # проверка новых писем
                 msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
                 continue
         except Exception:
+            print('Inet OFF')  # для тестов
             continue
 
 def Start_Inet():
