@@ -18,7 +18,9 @@ import base64
 from threading import Thread
 from imaplib import IMAP4_SSL
 import time
-import os
+#import os
+import urllib.request
+import datetime
 
 # словарь с сообщеничями
 dict_Alarm = {'Alarm_0': ['\n ТРЕВОГА!!! Датчик №0'],
@@ -53,6 +55,10 @@ M.login('ffgg-1981@mail.ru', 'Asdf210781')  # адрес почты для за�
 msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
 
 CONNECT = True
+
+LINK = 'https://ya.ru'
+Flag = 1
+T_1 = ''
 
 def Con_ser():
     global CONNECT, ser
@@ -134,6 +140,53 @@ def Alarm():  # проверяет данные с COM порта и отпра�
             text_msg_alarm = MIMEText(j[0].encode('utf-8'), _charset='utf-8')  # формируем текст письма
             Thread(target=pochta, args=(body, text_msg_alarm)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
 
+def inet():
+    global Flag, T_1
+
+    try:
+        today = datetime.datetime.today()  # создаем объект datatime
+        h = urllib.request.urlopen(LINK)  # создаем объект http.client.HTTPResponse
+
+        if LINK != h.geturl():  # сравниваем вернувшийся url с исходным
+            raise IOError
+
+        h.close()
+
+        #print(urllib.request.urlopen(LINK).geturl())
+        #print('Интернет работает')
+        if Flag == 0:  # срабатывает при восстановлении связи
+            #print('Интернет восстановлен!')
+            t_1 = today.strftime("%H:%M:%S %d-%m-%Y")  # записываем время восстановления связи в переменную t_1
+            #print('Связь отсутствовала с ' + T_1 + ' до ' + t_1)
+            Flag = 1
+
+            text_mail = '\nСвязь отсутствовал с ' + T_1 + ' до ' + t_1
+            text_msg = MIMEText(text_mail.encode('utf-8'), _charset='utf-8')
+#            Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#            msg = MIMEText(text_mail.encode('utf-8'), _charset='utf-8')
+#            body_1 = body + msg.as_string()
+
+            try:
+                Thread(target=pochta, args=(body, text_msg)).start()  # открываем отдельный поток и запускаем функцию оптравки почты
+#                pochta(body_1)  # отправляем письмо после восстановления связи
+
+            except Exception:
+                pass
+                #print('Не удалось отправить письмо.')
+
+        time.sleep(5)  # задержка программы на 5 секунд
+
+    except IOError:  # если в процессе запроса urllib.request.urlopen возникла ошибка
+        today = datetime.datetime.today()  # создаем объект datatime
+        if Flag == 1:  # срабатывает при обрыве связи
+            #print("Интернета нет!")
+            #print(today.strftime("%H:%M:%S %d-%m-%Y"))  # печатаем текущее время
+            T_1 = today.strftime("%H:%M:%S %d-%m-%Y")  # записываем время разрыва интернета в переменную T-1
+            Flag = 0
+
+        time.sleep(5)  # задержка программы на 5 секунд
+        #print('Повторная проверка')
+
 def Start_Alarm():  # запускает функцию Alarm в бесконечном цикле
     global ser, CONNECT
 
@@ -159,24 +212,35 @@ def Start_UID_new_email():  # проверка новых писем
 
     while True:
         try:
-            time.sleep(5)  # задержка программы на 5 секунд
+            inet()
+            try:
+                time.sleep(5)  # задержка программы на 5 секунд
 
-            if UID_new_email() != False:  # если есть новое письмо
-                new_email(last_uid)
-            print('ok')  # для тестов
+                if UID_new_email() != False:  # если есть новое письмо
+                    new_email(last_uid)
+                print('ok')  # для тестов
 
+            except Exception:
+                print('ERROR POST')  # для тестов
+                M = IMAP4_SSL('imap.mail.ru')
+                M.login('ffgg-1981@mail.ru', 'Asdf210781')
+                msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
+                continue
         except Exception:
-            print('ERROR POST')  # для тестов
-            M = IMAP4_SSL('imap.mail.ru')
-            M.login('ffgg-1981@mail.ru', 'Asdf210781')
-            msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
             continue
+
+def Start_Inet():
+    while True:
+        inet()
 
 thread1 = Thread(target=Start_Alarm)
 thread2 = Thread(target=Start_UID_new_email)
+#thread3 = Thread(target=Start_Inet)
 
 thread1.start()
 thread2.start()
+#thread3.start()
 
 thread1.join()
 thread2.join()
+#thread3.join()
