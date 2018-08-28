@@ -57,9 +57,9 @@ msgs = M.select('inbox')  # подключаемся к папке входящ�
 
 CONNECT = True
 
-LINK = 'https://ya.ru'
+LINK = 'https://ya.ru'  # ссылка для проверки интернета
 Flag = 1
-T_1 = ''
+T_1 = ''  # переменная для фиксации даты и времени разрыва интернета
 
 def Con_ser():
     global CONNECT, ser
@@ -213,9 +213,10 @@ def Start_UID_new_email():  # проверка новых писем
 
     while True:
         try:
-            inet()
+            inet()  # проверяем наличие интерната с задержкой 5 сек
+
             try:
-                time.sleep(5)  # задержка программы на 5 секунд
+#                time.sleep(5)  # задержка программы на 5 секунд
 
                 if UID_new_email() != False:  # если есть новое письмо
                     new_email(last_uid)
@@ -223,10 +224,14 @@ def Start_UID_new_email():  # проверка новых писем
 
             except Exception:
                 print('ERROR POST')  # для тестов
-                M = IMAP4_SSL('imap.mail.ru')
-                M.login('ffgg-1981@mail.ru', 'Asdf210781')
-                msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
-                continue
+                try:
+                    M = IMAP4_SSL('imap.mail.ru')
+                    M.login('ffgg-1981@mail.ru', 'Asdf210781')
+                    msgs = M.select('inbox')  # подключаемся к папке входящие. пример ('OK', [b'8'])
+
+                except Exception:
+                    continue
+#                continue
         except Exception:
             print('Inet OFF')  # для тестов
             continue
