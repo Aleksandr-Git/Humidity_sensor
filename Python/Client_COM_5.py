@@ -9,6 +9,7 @@
 # письмо отправляется через отдельный поток
 # !!! убрать принты для проверок
 # !!! текст для теста Git
+# !!! текст для теста Git
 
 import smtplib
 from email.mime.text import MIMEText
