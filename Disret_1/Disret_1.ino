@@ -15,8 +15,8 @@ int LED = 13;
 
 boolean flag_0 = true;
 boolean flag_1 = true;
-boolean flag_2 = true;
-int flag_3 = 0;
+boolean flag_2 = false;
+int flag_3 = 3;
 
 void setup() {
 pinMode(dPin_0, INPUT);
@@ -24,10 +24,8 @@ pinMode(dPin_1, INPUT);
 pinMode(dPin_2, INPUT);
 pinMode(dPin_3, INPUT);
 
-pinMode(LED, OUTPUT);  // для тестов
-
+pinMode(LED, OUTPUT);  // режим охраны
 Serial.begin(9600);
-
 
 debouncer_0.attach(dPin_0); // Даем бибилотеке знать, к какому пину мы подключили кнопку
 debouncer_0.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
@@ -65,33 +63,47 @@ void loop() {
     flag_1 = true;
     }
 
-  if (debouncer_2.read() == HIGH && flag_2 == true && flag_3 == 2){ // если значение HIGH
+// если реле датчика движение замкнуто (значение HIGH)
+  if (debouncer_2.read() == HIGH && flag_2 == true && flag_3 == 0){
     Serial.println("Norma_D2");
     flag_2 = false;
     }
-  if (debouncer_2.read() == LOW && flag_2 == false && flag_3 == 2){ // если значение LOW
+
+// если реле датчика движения разомкнуто (значение LOW) 
+  if (debouncer_2.read() == LOW && flag_2 == false && flag_3 == 0){
     Serial.println("Alarm_D2");
     flag_2 = true;
     }
 
+// включаем режим мониторинга
   if (debouncer_3.read() == HIGH && flag_3 == 0){
     Serial.println("Mode_M");
     flag_3 = 1;
+    digitalWrite(LED, LOW);
   }
 
   else if (debouncer_3.read() == LOW && flag_3 == 1){
     flag_3 = 2;
   }
-  
-  else if (debouncer_3.read() == HIGH && flag_3 == 2){
+
+// включаем режим тревоги  
+  else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == HIGH){
     Serial.println("Mode_A");
+    flag_2 = true;
     flag_3 = 3;
+    digitalWrite(LED, HIGH);
   }
 
   else if (debouncer_3.read() == LOW && flag_3 == 3){
     flag_3 = 0;
+    digitalWrite(LED, HIGH);
   }
 
+// если датчик движения в тревоге, контроллер не встанет на охрану
+  else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == LOW){
+    Serial.println("ERROR_Mode_A");
+    flag_3 = 1;
+  }
 
 //  if (debouncer_3.read() == HIGH && flag_3 == true){ // если значение HIGH
 //    Serial.println("Norma_D3");
