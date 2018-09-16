@@ -88,8 +88,9 @@ void loop() {
 
 // включаем режим тревоги  
   else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == HIGH){
+    delay(3000);
     Serial.println("Mode_A");
-    flag_2 = true;
+    flag_2 = false;
     flag_3 = 3;
     digitalWrite(LED, HIGH);
   }
