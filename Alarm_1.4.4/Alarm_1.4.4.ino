@@ -11,37 +11,38 @@
 Thread soundThread = Thread(); // поток управления сиреной
 Thread sensorThread = Thread(); // поток для датчиков
 
-int sensPin_0 = A0; // аналоговый пин датчика №0
-int sensPin_1 = A1; // аналоговый пин датчика №1
-int sensPin_2 = A2; // аналоговый пин датчика №2
-int sensPin_3 = A3; // аналоговый пин датчика №3
+int sensPin_0 = A0; // аналоговый пин датчика влажности №0
+int sensPin_1 = A1; // аналоговый пин датчика влажности №1
+int sensPin_2 = A2; // аналоговый пин датчика влажности №2
+int sensPin_3 = A3; // аналоговый пин датчика влажности №3
 
 int SOUNDPin = 9; // пин для звукового сигнала
-int LEDPin_0 = 10; // цифровой порт светодиода №0
-int LEDPin_1 = 11; // цифровой порт светодиода №1
-int LEDPin_2 = 12; // цифровоцй порт светодиод №2
-int LEDPin_3 = 13; // циыфровой пин светодиода №3
+int LEDPin_0 = 10; // цифровой порт светодиода датчика влажности №0
+int LEDPin_1 = 11; // цифровой порт светодиода датчика влажности №1
+int LEDPin_2 = 12; // цифровоцй порт светодиод датчика влажности №2
+int LEDPin_3 = 13; // циыфровой пин светодиода датчика влажности №3
 
 int buttonPin = 7; // пин для кнопки сброса
 
-// счетчики тревог
+// счетчики тревог датчиков влажности
 int countAlarm_0 = 0;
 int countAlarm_1 = 0;
 int countAlarm_2 = 0;
 int countAlarm_3 = 0;
 
-// счетчики норм
+// счетчики норм датчиков влажности
 int countNorma_0 = 0;
 int countNorma_1 = 0;
 int countNorma_2 = 0;
 int countNorma_3 = 0;
 
-// состояние шлейфов, тревога или норма
+// состояние налоговых шлейфов, тревога или норма
 boolean ALARM_0 = false;
 boolean ALARM_1 = false;
 boolean ALARM_2 = false;
 boolean ALARM_3 = false;
 
+// состояние звукового оповещвтеля
 boolean SOUND_Alarm = false;
 
 int NORMA = 50; // порог нормы 
@@ -49,6 +50,7 @@ int NORMA = 50; // порог нормы
 static int ton = 1;  // тональность звука, Гц
 static bool soundStatus = false; // переменная для контроля состояния звука
 
+// создаем объекты библиотеки Bounce
 Bounce debouncer_0 = Bounce();
 Bounce debouncer_1 = Bounce();
 Bounce debouncer_2 = Bounce();
@@ -59,28 +61,29 @@ const int dPin_1 = 1; // защита от протечки
 const int dPin_2 = 2; // датчик движения
 const int dPin_3 = 3; // включение режима охраны
 
+// состояние цифровых шлейфов
 boolean flag_0 = true;
 boolean flag_1 = true;
 boolean flag_2 = false;
 int flag_3 = 3;
 
 void setup() {
-  pinMode(sensPin_0, INPUT);
-  pinMode(sensPin_1, INPUT);
-  pinMode(sensPin_2, INPUT);
-  pinMode(sensPin_3, INPUT);
+  pinMode(sensPin_0, INPUT); // вход датчика влажности №0
+  pinMode(sensPin_1, INPUT); // вход датчика влажности №1
+  pinMode(sensPin_2, INPUT); // вход датчика влажности №2
+  pinMode(sensPin_3, INPUT); // вход датчика влажности №3
   
-  pinMode(SOUNDPin, OUTPUT);
-  pinMode(LEDPin_0, OUTPUT);
-  pinMode(LEDPin_1, OUTPUT);
-  pinMode(LEDPin_2, OUTPUT);
-  pinMode(LEDPin_3, OUTPUT);
-  pinMode(buttonPin, INPUT);
+  pinMode(SOUNDPin, OUTPUT); // выход для звукового оповещателя
+  pinMode(LEDPin_0, OUTPUT); // выход светодиода №0
+  pinMode(LEDPin_1, OUTPUT); // выход светолиода №1
+  pinMode(LEDPin_2, OUTPUT); // выход светодиода №2
+  pinMode(LEDPin_3, OUTPUT); // выход светодиода №3
+  pinMode(buttonPin, INPUT); // вход для кнопки сброса
 
-  pinMode(dPin_0, INPUT);
-  pinMode(dPin_1, INPUT);
-  pinMode(dPin_2, INPUT);
-  pinMode(dPin_3, INPUT);
+  pinMode(dPin_0, INPUT); // вход контроля электропитания вводного щита
+  pinMode(dPin_1, INPUT); // вход защиты от протчки
+  pinMode(dPin_2, INPUT); // вход датчика движения
+  pinMode(dPin_3, INPUT); // вход кнопки постановки на охрпну
 
   debouncer_0.attach(dPin_0); // Даем бибилотеке знать, к какому пину мы подключили кнопку
   debouncer_0.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
@@ -272,10 +275,10 @@ Serial.print(analogRead(sensPin_2));
 Serial.print("/");
 Serial.println(analogRead(sensPin_3));
 
-int a_0 = analogRead(sensPin_0);
-int a_1 = analogRead(sensPin_1);
-int a_2 = analogRead(sensPin_2);
-int a_3 = analogRead(sensPin_3);
+//int a_0 = analogRead(sensPin_0);
+//int a_1 = analogRead(sensPin_1);
+//int a_2 = analogRead(sensPin_2);
+//int a_3 = analogRead(sensPin_3);
 
 //Serial.println(a_0 + a_1 + a_2 + a_3);
 //delay(500);
