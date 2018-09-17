@@ -42,7 +42,7 @@ boolean ALARM_1 = false;
 boolean ALARM_2 = false;
 boolean ALARM_3 = false;
 
-// состояние звукового оповещвтеля
+// состояние звукового оповещателя
 boolean SOUND_Alarm = false;
 
 int NORMA = 50; // порог нормы 
