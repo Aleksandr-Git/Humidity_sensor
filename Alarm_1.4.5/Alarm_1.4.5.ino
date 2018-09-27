@@ -72,7 +72,7 @@ boolean flag_2 = false;
 int flag_3 = 3;
 
 String input_Serial = "";
-boolean dataReady = 0;
+boolean dataReady = false;
 
 void setup() {
   pinMode(sensPin_0, INPUT); // вход датчика влажности №0
@@ -111,10 +111,10 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available()){
-    char incomingChar = (char)Serial.read();
+  while (Serial.available()){ // ждем появления данных на порту
+    char incomingChar = (char)Serial.read(); // записываем данные в массив
     if (incomingChar == 'C'){     
-      dataReady = 0;
+      dataReady = false;
       input_Serial = "";
      
       continue;
@@ -124,13 +124,13 @@ void loop() {
       input_Serial += incomingChar;
     }
     else{
-      dataReady = 1;
+      dataReady = true;
     }
   }
 
 //  if (dataReady && input_Serial == "Mode_A"){
 //    Serial.println("Ok");
-//    dataReady = 0;
+//    dataReady = false;
 //    }
   
 
@@ -384,14 +384,16 @@ void loop() {
 // включение режима мониторинга дистанционно
   else if (dataReady && input_Serial == "Mode_M" && flag_3 == 0){
     Serial.println("Mode_M");
-    digitalWrite(LED, LOW);
+    dataReady = false;
     flag_3 = 2;
+    digitalWrite(LED, LOW);
     }
 
 // включаем режим тревоги дистанционно
   else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == HIGH){
        delay(3000);
     Serial.println("Mode_A");
+    dataReady = false;
     flag_2 = false;
     flag_3 = 0;
     digitalWrite(LED, HIGH);
@@ -400,7 +402,7 @@ void loop() {
 // если датчик движения в тревоге, контроллер дистанционно не встанет на охрану
   else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == LOW){
     Serial.println("ERROR_Mode_A");
-    dataReady = 0;
+    dataReady = false;
     flag_3 = 1;      
     }
 }
