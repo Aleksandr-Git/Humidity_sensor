@@ -1,4 +1,7 @@
-// !!! назначить новый светодиод для индикатора постановки на охрану (не 13)
+// написать комментарии
+// !!! дописать в Python функцию постановки и снятие с охраны через почту
+// !! сделать отправку показаний по запросу через серийный порт
+// добавлена возможность ставить и снимать с охраны по команде через серийный порт
 // добавлено передача данных с датчиков
 // добавлен отдельный поток на включение зумера
 // переименованы аналоговые входы с 1 на А1 и т.д.
@@ -16,11 +19,12 @@ int sensPin_1 = A1; // аналоговый пин датчика влажнос
 int sensPin_2 = A2; // аналоговый пин датчика влажности №2
 int sensPin_3 = A3; // аналоговый пин датчика влажности №3
 
-int SOUNDPin = 9; // пин для звукового сигнала
-int LEDPin_0 = 10; // цифровой порт светодиода датчика влажности №0
-int LEDPin_1 = 11; // цифровой порт светодиода датчика влажности №1
-int LEDPin_2 = 12; // цифровой порт светодиода датчика влажности №2
-int LEDPin_3 = 13; // цифровой порт светодиода датчика влажности №3
+int SOUNDPin = 8; // пин для звукового сигнала
+int LEDPin_0 = 9; // цифровой порт светодиода датчика влажности №0
+int LEDPin_1 = 10; // цифровой порт светодиода датчика влажности №1
+int LEDPin_2 = 11; // цифровой порт светодиода датчика влажности №2
+int LEDPin_3 = 12; // цифровой порт светодиода датчика влажности №3
+int LED = 13; // цифровой порт светодиода режима датчика движения (мониторинг или охрана)
 
 int buttonPin = 7; // пин для кнопки сброса
 
@@ -67,6 +71,9 @@ boolean flag_1 = true;
 boolean flag_2 = false;
 int flag_3 = 3;
 
+String input_Serial = "";
+boolean dataReady = 0;
+
 void setup() {
   pinMode(sensPin_0, INPUT); // вход датчика влажности №0
   pinMode(sensPin_1, INPUT); // вход датчика влажности №1
@@ -78,6 +85,7 @@ void setup() {
   pinMode(LEDPin_1, OUTPUT); // выход светолиода №1
   pinMode(LEDPin_2, OUTPUT); // выход светодиода №2
   pinMode(LEDPin_3, OUTPUT); // выход светодиода №3
+  pinMode(LED, OUTPUT); // выход светодиода режима системы
   pinMode(buttonPin, INPUT); // вход для кнопки сброса
 
   pinMode(dPin_0, INPUT); // вход контроля электропитания вводного щита
@@ -103,6 +111,28 @@ void setup() {
 }
 
 void loop() {
+  while (Serial.available()){
+    char incomingChar = (char)Serial.read();
+    if (incomingChar == 'C'){     
+      dataReady = 0;
+      input_Serial = "";
+     
+      continue;
+    }
+   
+    if (incomingChar != '!'){
+      input_Serial += incomingChar;
+    }
+    else{
+      dataReady = 1;
+    }
+  }
+
+//  if (dataReady && input_Serial == "Mode_A"){
+//    Serial.println("Ok");
+//    dataReady = 0;
+//    }
+  
 
 // если тревога и прошло время интервала потока, запускается поток со звуком
     if (SOUND_Alarm == true && soundThread.shouldRun()){
@@ -267,13 +297,13 @@ void loop() {
     digitalWrite(SOUNDPin, LOW);
     }
 
-Serial.print(analogRead(sensPin_0));
-Serial.print("/");
-Serial.print(analogRead(sensPin_1));
-Serial.print("/");
-Serial.print(analogRead(sensPin_2));
-Serial.print("/");
-Serial.println(analogRead(sensPin_3));
+//Serial.print(analogRead(sensPin_0));
+//Serial.print("/");
+//Serial.print(analogRead(sensPin_1));
+//Serial.print("/");
+//Serial.print(analogRead(sensPin_2));
+//Serial.print("/");
+//Serial.println(analogRead(sensPin_3));
 
 //int a_0 = analogRead(sensPin_0);
 //int a_1 = analogRead(sensPin_1);
@@ -324,7 +354,7 @@ Serial.println(analogRead(sensPin_3));
   if (debouncer_3.read() == HIGH && flag_3 == 0){
     Serial.println("Mode_M");
     flag_3 = 1;
-//    digitalWrite(LED, LOW);
+    digitalWrite(LED, LOW);
   }
 
   else if (debouncer_3.read() == LOW && flag_3 == 1){
@@ -337,12 +367,12 @@ Serial.println(analogRead(sensPin_3));
     Serial.println("Mode_A");
     flag_2 = false;
     flag_3 = 3;
-//    digitalWrite(LED, HIGH);
+    digitalWrite(LED, HIGH);
   }
 
   else if (debouncer_3.read() == LOW && flag_3 == 3){
     flag_3 = 0;
-//    digitalWrite(LED, HIGH);
+    digitalWrite(LED, HIGH);
   }
 
 // если датчик движения в тревоге, контроллер не встанет на охрану
@@ -351,6 +381,28 @@ Serial.println(analogRead(sensPin_3));
     flag_3 = 1;
   }
 
+// включение режима мониторинга дистанционно
+  else if (dataReady && input_Serial == "Mode_M" && flag_3 == 0){
+    Serial.println("Mode_M");
+    digitalWrite(LED, LOW);
+    flag_3 = 2;
+    }
+
+// включаем режим тревоги дистанционно
+  else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == HIGH){
+       delay(3000);
+    Serial.println("Mode_A");
+    flag_2 = false;
+    flag_3 = 0;
+    digitalWrite(LED, HIGH);
+    }
+    
+// если датчик движения в тревоге, контроллер дистанционно не встанет на охрану
+  else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == LOW){
+    Serial.println("ERROR_Mode_A");
+    dataReady = 0;
+    flag_3 = 1;      
+    }
 }
 
 // поочередно включает и выключает звук
