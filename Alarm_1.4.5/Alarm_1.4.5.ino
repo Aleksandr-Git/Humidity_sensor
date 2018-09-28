@@ -40,7 +40,7 @@ int countNorma_1 = 0;
 int countNorma_2 = 0;
 int countNorma_3 = 0;
 
-// состояние налоговых шлейфов, тревога или норма
+// состояние аналоговых шлейфов, тревога или норма
 boolean ALARM_0 = false;
 boolean ALARM_1 = false;
 boolean ALARM_2 = false;
@@ -71,8 +71,8 @@ boolean flag_1 = true;
 boolean flag_2 = false;
 int flag_3 = 3;
 
-String input_Serial = "";
-boolean dataReady = false;
+String input_Serial = ""; // строковая переменная для записи данных из серийного порта
+boolean dataReady = false; // контроль готовности принятых данных
 
 void setup() {
   pinMode(sensPin_0, INPUT); // вход датчика влажности №0
@@ -113,105 +113,99 @@ void setup() {
 void loop() {
   while (Serial.available()){ // ждем появления данных на порту
     char incomingChar = (char)Serial.read(); // записываем данные в массив
-    if (incomingChar == 'C'){     
-      dataReady = false;
-      input_Serial = "";
+    if (incomingChar == 'C'){ // если первый байт равен C     
+      dataReady = false; // меняем состояние переменной контроля принятых данных
+      input_Serial = ""; // очищаем переменную от ранее принятых данных
      
-      continue;
+      continue; // переходим на следующий цикл
     }
    
-    if (incomingChar != '!'){
-      input_Serial += incomingChar;
+    if (incomingChar != '!'){ // если прочитанный бит не равен "!"
+      input_Serial += incomingChar; // добавляем в переменную принятый бит
     }
     else{
-      dataReady = true;
+      dataReady = true; // в противном случае данные приняты и готовы для обработки
     }
   }
-
-//  if (dataReady && input_Serial == "Mode_A"){
-//    Serial.println("Ok");
-//    dataReady = false;
-//    }
-  
 
 // если тревога и прошло время интервала потока, запускается поток со звуком
     if (SOUND_Alarm == true && soundThread.shouldRun()){
     soundThread.run();
     }
   
-  // если показания датчика выше порога и система находится в состоянии нормы
+// если показания датчика выше порога и система находится в состоянии нормы
   if (analogRead(sensPin_0) > NORMA && ALARM_0 == false){ 
     countAlarm_0 += 1; // увеличиваем счетчик тревог
     }
-  // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+// если счетчик тревог не достигает необходимого значения и датчик показывает норму
    else if (analogRead(sensPin_0) < NORMA && ALARM_0 == false){ 
     countAlarm_0 = 0; // присваиваем счетчику значение 0
     } 
-  
+// если показания датчика выше порога и система находится в состоянии нормы  
   if (analogRead(sensPin_1) > NORMA && ALARM_1 == false){ 
     countAlarm_1 += 1; // увеличиваем счетчик тревог
     }
-  // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+// если счетчик тревог не достигает необходимого значения и датчик показывает норму
    else if (analogRead(sensPin_1) < NORMA && ALARM_1 == false){ 
     countAlarm_1 = 0; // присваиваем счетчику значение 0
     }
-
+// если показания датчика выше порога и система находится в состоянии нормы 
   if (analogRead(sensPin_2) > NORMA && ALARM_2 == false){ 
     countAlarm_2 += 1; // увеличиваем счетчик тревог
     }
-  // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+// если счетчик тревог не достигает необходимого значения и датчик показывает норму
    else if (analogRead(sensPin_2) < NORMA && ALARM_2 == false){ 
-    countAlarm_2 = 0; // присваиваем счетчику значение 0
+    countAlarm_2 = 0; // присваиваем счетчику значение 0 (сбрасываем)
     }
-
+// если показания датчика выше порога и система находится в состоянии нормы
   if (analogRead(sensPin_3) > NORMA && ALARM_3 == false){ 
     countAlarm_3 += 1; // увеличиваем счетчик тревог
     }
-  // если счетчик тревог не достигает необходимого значения и датчик показывает норму
+// если счетчик тревог не достигает необходимого значения и датчик показывает норму
    else if (analogRead(sensPin_3) < NORMA && ALARM_3 == false){ 
     countAlarm_3 = 0; // присваиваем счетчику значение 0
     }
 
   // если счетчик тревог датчика №0 больше
   if (countAlarm_0 > 300){ 
-    digitalWrite(LEDPin_0, HIGH);
+    digitalWrite(LEDPin_0, HIGH); // включаем светодиод
 //    digitalWrite(SOUNDPin, HIGH);
-    SOUND_Alarm = true;
+    SOUND_Alarm = true; // меняем значение переменной звукового ововещения
 //    soundThread.run();
-    ALARM_0 = true;
-    countAlarm_0 = 0;    
-    Serial.println("Alarm_0");  
+    ALARM_0 = true; // меняем значение переменной шлейфа
+    countAlarm_0 = 0; // сбрасываем счетчик
+    Serial.println("Alarm_0"); // отправляем данные по серийному порту
     }
 
   // если счетчик тревог датчика №1 больше
   if (countAlarm_1 > 300){ 
-    digitalWrite(LEDPin_1, HIGH);
+    digitalWrite(LEDPin_1, HIGH); // включаем светодиод
 //    digitalWrite(SOUNDPin, HIGH);
-    SOUND_Alarm = true;  
+    SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
 //    soundThread.run();
-    ALARM_1 = true;
-    countAlarm_1 = 0;
-    Serial.println("Alarm_1");
+    ALARM_1 = true; // меняем значение переменной шлейфа
+    countAlarm_1 = 0; // сбрасываем счетчик
+    Serial.println("Alarm_1"); // отправляем данные по серийному порту
     }
 
   // если счетчик тревог датчика №2 больше
   if (countAlarm_2 > 300){ 
-    digitalWrite(LEDPin_2, HIGH);
+    digitalWrite(LEDPin_2, HIGH); // включаем светодиод
     //digitalWrite(SOUNDPin, HIGH);
-    SOUND_Alarm = true;    
-    ALARM_2 = true;
-    countAlarm_2 = 0;
-    Serial.println("Alarm_2");
+    SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
+    ALARM_2 = true; // меняем значение переменной шлейфа
+    countAlarm_2 = 0; // сбрасываем счетчик
+    Serial.println("Alarm_2"); // отправляем данные по серийному порту
     }
 
   // если счетчик тревог датчика №3 больше
   if (countAlarm_3 > 300){ 
-    digitalWrite(LEDPin_3, HIGH);
+    digitalWrite(LEDPin_3, HIGH); // включаем светодиод
     //digitalWrite(SOUNDPin, HIGH);
-    SOUND_Alarm = true;   
-    ALARM_3 = true;
-    countAlarm_3 = 0;
-    Serial.println("Alarm_3");
+    SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
+    ALARM_3 = true; // меняем значение переменной шлейфа
+    countAlarm_3 = 0; // сбрасываем счетчик
+    Serial.println("Alarm_3"); // отправляем данные по серийному порту
     }
 
   // если показание датчика №0 ниже порога и система находится в состоянии тревоги
@@ -256,34 +250,34 @@ void loop() {
 
   // если счетчик нормы датчика №0 больше
   if (countNorma_0 > 300){ 
-    digitalWrite(LEDPin_0, LOW);
-    ALARM_0 = false;
-    countNorma_0 = 0;
-    Serial.println("Norma_0");
+    digitalWrite(LEDPin_0, LOW); // выключаем светодиод
+    ALARM_0 = false; // меняем значение переменной шлейфа
+    countNorma_0 = 0; // сбрасываем счетчик
+    Serial.println("Norma_0"); // отправляем данные по серийному порту
     }
 
   // если счетчик нормы датчика №1 больше
   if (countNorma_1 > 300){ 
-    digitalWrite(LEDPin_1, LOW);
-    ALARM_1 = false;
-    countNorma_1 = 0;
-    Serial.println("Norma_1");
+    digitalWrite(LEDPin_1, LOW); // выключаем светодиод
+    ALARM_1 = false; // меняем значение переменной шлейфа
+    countNorma_1 = 0; // сбрасываем счетчик
+    Serial.println("Norma_1"); // отправляем данные по серийному порту
     }
 
   // если счетчик нормы датчика №2 больше
   if (countNorma_2 > 300){ 
-    digitalWrite(LEDPin_2, LOW);
-    ALARM_2 = false;
-    countNorma_2 = 0;
+    digitalWrite(LEDPin_2, LOW); // выключаем светодиод
+    ALARM_2 = false; // меняем значение переменной шлейфа
+    countNorma_2 = 0; // сбрасываем счетчик
     Serial.println("Norma_2");
     }
 
   // если счетчик нормы датчика №3 больше
   if (countNorma_3 > 300){ 
-    digitalWrite(LEDPin_3, LOW);
-    ALARM_3 = false;
-    countNorma_3 = 0;
-    Serial.println("Norma_3");
+    digitalWrite(LEDPin_3, LOW); // выключаем светодиод
+    ALARM_3 = false; // меняем значение переменной шлейфа
+    countNorma_3 = 0; // сбрасываем счетчик
+    Serial.println("Norma_3"); // отправляем данные по серийному порту
     }
 
 	// если звук включен, выключаем его по нажатию кнопки
