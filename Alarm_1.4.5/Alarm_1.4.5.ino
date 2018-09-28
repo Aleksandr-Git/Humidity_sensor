@@ -9,8 +9,6 @@
 #include <Thread.h> // потоки
 #include <Bounce2.h> // библиотека для обработки дребезгов контактов
 
-// написать отдельный поток для зумера
-
 Thread soundThread = Thread(); // поток управления сиреной
 Thread sensorThread = Thread(); // поток для датчиков
 
@@ -93,27 +91,27 @@ void setup() {
   pinMode(dPin_2, INPUT); // вход датчика движения
   pinMode(dPin_3, INPUT); // вход кнопки постановки на охрпну
 
-  debouncer_0.attach(dPin_0); // Даем бибилотеке знать, к какому пину мы подключили кнопку
-  debouncer_0.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
-  debouncer_1.attach(dPin_1); // Даем бибилотеке знать, к какому пину мы подключили кнопку
-  debouncer_1.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
-  debouncer_2.attach(dPin_2); // Даем бибилотеке знать, к какому пину мы подключили кнопку
-  debouncer_2.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
-  debouncer_3.attach(dPin_3); // Даем бибилотеке знать, к какому пину мы подключили кнопку
-  debouncer_3.interval(5); // Интервал, в течение которого мы не буем получать значения с пина
+  debouncer_0.attach(dPin_0); // Даем бибилотеке знать, к какому пину мы подключили кнопку (электропитание вводного щита)
+  debouncer_0.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
+  debouncer_1.attach(dPin_1); // Даем бибилотеке знать, к какому пину мы подключили кнопку (защита от протчки)
+  debouncer_1.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
+  debouncer_2.attach(dPin_2); // Даем бибилотеке знать, к какому пину мы подключили кнопку (датчик движения)
+  debouncer_2.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
+  debouncer_3.attach(dPin_3); // Даем бибилотеке знать, к какому пину мы подключили кнопку (кнопка постановки на охрану)
+  debouncer_3.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
   
-  analogReference(DEFAULT); // отчетное напряжение 5В уже по умолчанию
+  analogReference(DEFAULT); // отчетное напряжение 5В уже по умолчанию (можно не писать, установлено по умолчанию)
 
-  Serial.begin(9600); // открываем com порт
+  Serial.begin(9600); // открываем UART порт
 
   soundThread.onRun(sound); // назначаем потоку задачу
   soundThread.setInterval(500);// задаём интервал срабатывания, мсек
 }
 
 void loop() {
-  while (Serial.available()){ // ждем появления данных на порту
+  while (Serial.available()){ // ждем появления данных на порту UART
     char incomingChar = (char)Serial.read(); // записываем данные в массив
-    if (incomingChar == 'C'){ // если первый байт равен C     
+    if (incomingChar == 'C'){ // если первый байт равен 'C'     
       dataReady = false; // меняем состояние переменной контроля принятых данных
       input_Serial = ""; // очищаем переменную от ранее принятых данных
      
@@ -128,7 +126,7 @@ void loop() {
     }
   }
 
-// если тревога и прошло время интервала потока, запускается поток со звуком
+// если на любом из датчиков влажности тревога и прошло время интервала потока, запускается поток со звуком
     if (SOUND_Alarm == true && soundThread.shouldRun()){
     soundThread.run();
     }
@@ -169,9 +167,7 @@ void loop() {
   // если счетчик тревог датчика №0 больше
   if (countAlarm_0 > 300){ 
     digitalWrite(LEDPin_0, HIGH); // включаем светодиод
-//    digitalWrite(SOUNDPin, HIGH);
     SOUND_Alarm = true; // меняем значение переменной звукового ововещения
-//    soundThread.run();
     ALARM_0 = true; // меняем значение переменной шлейфа
     countAlarm_0 = 0; // сбрасываем счетчик
     Serial.println("Alarm_0"); // отправляем данные по серийному порту
@@ -180,9 +176,7 @@ void loop() {
   // если счетчик тревог датчика №1 больше
   if (countAlarm_1 > 300){ 
     digitalWrite(LEDPin_1, HIGH); // включаем светодиод
-//    digitalWrite(SOUNDPin, HIGH);
     SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
-//    soundThread.run();
     ALARM_1 = true; // меняем значение переменной шлейфа
     countAlarm_1 = 0; // сбрасываем счетчик
     Serial.println("Alarm_1"); // отправляем данные по серийному порту
@@ -191,7 +185,6 @@ void loop() {
   // если счетчик тревог датчика №2 больше
   if (countAlarm_2 > 300){ 
     digitalWrite(LEDPin_2, HIGH); // включаем светодиод
-    //digitalWrite(SOUNDPin, HIGH);
     SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
     ALARM_2 = true; // меняем значение переменной шлейфа
     countAlarm_2 = 0; // сбрасываем счетчик
@@ -201,7 +194,6 @@ void loop() {
   // если счетчик тревог датчика №3 больше
   if (countAlarm_3 > 300){ 
     digitalWrite(LEDPin_3, HIGH); // включаем светодиод
-    //digitalWrite(SOUNDPin, HIGH);
     SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
     ALARM_3 = true; // меняем значение переменной шлейфа
     countAlarm_3 = 0; // сбрасываем счетчик
@@ -319,6 +311,7 @@ void loop() {
     Serial.println("Norma_D0");
     flag_0 = false;
     }
+	
   if (debouncer_0.read() == LOW && flag_0 == false){ // если значение LOW
     Serial.println("Alarm_D0");
     flag_0 = true;
@@ -328,6 +321,7 @@ void loop() {
     Serial.println("Norma_D1");
     flag_1 = false;
     }
+	
   if (debouncer_1.read() == LOW && flag_1 == false){ // если значение LOW
     Serial.println("Alarm_D1");
     flag_1 = true;
@@ -358,7 +352,7 @@ void loop() {
 
 // включаем режим тревоги  
   else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == HIGH){
-    delay(3000);
+    delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
     flag_2 = false;
     flag_3 = 3;
@@ -386,7 +380,7 @@ void loop() {
 
 // включаем режим тревоги дистанционно
   else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == HIGH){
-       delay(3000);
+       delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
     dataReady = false;
     flag_2 = false;
