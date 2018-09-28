@@ -307,22 +307,22 @@ void loop() {
 //Serial.println(analogRead(analogInPin));
 //dValue = digitalRead(dPin_0);
 
-  if (debouncer_0.read() == HIGH && flag_0 == true){ // если значение HIGH
+  if (debouncer_0.read() == HIGH && flag_0 == true){ // если значение HIGH (вводной щит)
     Serial.println("Norma_D0");
     flag_0 = false;
     }
 	
-  if (debouncer_0.read() == LOW && flag_0 == false){ // если значение LOW
+  if (debouncer_0.read() == LOW && flag_0 == false){ // если значение LOW (вводной щит)
     Serial.println("Alarm_D0");
     flag_0 = true;
     }
 
-  if (debouncer_1.read() == HIGH && flag_1 == true){ // если значение HIGH
+  if (debouncer_1.read() == HIGH && flag_1 == true){ // если значение HIGH (Протечка)
     Serial.println("Norma_D1");
     flag_1 = false;
     }
 	
-  if (debouncer_1.read() == LOW && flag_1 == false){ // если значение LOW
+  if (debouncer_1.read() == LOW && flag_1 == false){ // если значение LOW (Протечка)
     Serial.println("Alarm_D1");
     flag_1 = true;
     }
@@ -340,6 +340,7 @@ void loop() {
     }
 
 // включаем режим мониторинга
+// в этом режиме не отправляются данные о состоянии датчика движения
   if (debouncer_3.read() == HIGH && flag_3 == 0){
     Serial.println("Mode_M");
     flag_3 = 1;
@@ -350,7 +351,8 @@ void loop() {
     flag_3 = 2;
   }
 
-// включаем режим тревоги  
+// включаем режим тревоги
+// в этом режимет отправляются данные от датчика движения
   else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == HIGH){
     delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
@@ -380,7 +382,7 @@ void loop() {
 
 // включаем режим тревоги дистанционно
   else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == HIGH){
-       delay(3000); // задержка, чтобы покинуть помещение
+    delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
     dataReady = false;
     flag_2 = false;
@@ -396,10 +398,8 @@ void loop() {
     }
 }
 
-// поочередно включает и выключает звук
+// поочередно включает и выключает звук при срабртке датчиков влажности
 void sound(){
   soundStatus = !soundStatus;
   digitalWrite(SOUNDPin, soundStatus);
 }
-
-  
