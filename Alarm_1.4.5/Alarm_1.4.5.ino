@@ -290,7 +290,8 @@ void loop() {
     SOUND_Alarm = false;
     digitalWrite(SOUNDPin, LOW);
     }
-
+	
+// отправка данный с датчиков влажности
 //Serial.print(analogRead(sensPin_0));
 //Serial.print("/");
 //Serial.print(analogRead(sensPin_1));
