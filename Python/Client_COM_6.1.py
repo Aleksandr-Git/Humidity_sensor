@@ -46,7 +46,7 @@ dict_Alarm = {'Alarm_0': ['\n ТРЕВОГА!!! Датчик №0'],
 
 FROM = "vasaisvanov@gmail.com"  # адрес отправки письма
 TO = "gavryukov@mail.ru"  # адрес получателя
-SUBJECT = '=?UTF-8?B?' + base64.b64encode('Защита от протечек'.encode()).decode() + '?='  # тема письма
+SUBJECT = '=?UTF-8?B?' + base64.b64encode('Квартира'.encode()).decode() + '?='  # тема письма
 
 # Переменная для тела письма
 body = "\n".join((
