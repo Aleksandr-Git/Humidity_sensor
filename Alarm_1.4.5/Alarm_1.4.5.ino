@@ -1,3 +1,4 @@
+// !! нужно устанавливать именно Arduino Thread https://soltau.ru/index.php/arduino/item/373-kak-vypolnyat-parallelnye-zadachi-threads-v-programme-dlya-arduino
 // написать комментарии
 // !!! дописать в Python функцию постановки и снятие с охраны через почту
 // !! сделать отправку показаний по запросу через серийный порт
