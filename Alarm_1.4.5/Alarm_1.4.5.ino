@@ -22,8 +22,9 @@ int sensPin_3 = A3; // аналоговый пин датчика влажнос
 const int dPin_0 = 0; // контроль электропитания вводного щита
 const int dPin_1 = 1; // защита от протечки
 const int dPin_2 = 2; // датчик движения
-const int dPin_3 = 3; // включение режима охраны
-
+const int dPin_3 = 3; // реле контроля ИБП
+const int dPin_4 = 4; // включение режима охраны
+ 
 int buttonPin = 7; // пин для кнопки сброса
 
 int SOUNDPin = 8; // пин для звукового сигнала
@@ -55,7 +56,8 @@ boolean ALARM_3 = false;
 boolean flag_0 = true; // водной щит
 boolean flag_1 = true; // протечка
 boolean flag_2 = false; // датчик движения
-int flag_3 = 3; // кнопка включения режима охраны
+boolean flag_3 = true; // реле контроля ИБП
+int flag_4 = 3; // кнопка включения режима охраны
 
 // состояние звукового оповещателя
 boolean SOUND_Alarm = false;
@@ -73,6 +75,7 @@ Bounce debouncer_0 = Bounce();
 Bounce debouncer_1 = Bounce();
 Bounce debouncer_2 = Bounce();
 Bounce debouncer_3 = Bounce();
+Bounce debouncer_4 = Bounce();
 
 void setup() {
   pinMode(sensPin_0, INPUT); // вход датчика влажности №0
@@ -83,7 +86,8 @@ void setup() {
   pinMode(dPin_0, INPUT); // вход контроля электропитания вводного щита
   pinMode(dPin_1, INPUT); // вход защиты от протчки
   pinMode(dPin_2, INPUT); // вход датчика движения
-  pinMode(dPin_3, INPUT); // вход кнопки постановки на охрану
+  pinMode(dPin_3, INPUT); // вход реле контроля ИБП
+  pinMode(dPin_4, INPUT); // вход кнопки постановки на охрану
   
   pinMode(SOUNDPin, OUTPUT); // выход для звукового оповещателя
   pinMode(LEDPin_0, OUTPUT); // выход светодиода №0
@@ -99,8 +103,10 @@ void setup() {
   debouncer_1.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
   debouncer_2.attach(dPin_2); // Даем бибилотеке знать, к какому пину мы подключили кнопку (датчик движения)
   debouncer_2.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
-  debouncer_3.attach(dPin_3); // Даем бибилотеке знать, к какому пину мы подключили кнопку (кнопка постановки на охрану)
+  debouncer_3.attach(dPin_3); // Даем бибилотеке знать, к какому пину мы подключили кнопку (электропитание ИБП)
   debouncer_3.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
+  debouncer_4.attach(dPin_4); // Даем бибилотеке знать, к какому пину мы подключили кнопку (кнопка постановки на охрану)
+  debouncer_4.interval(5); // Интервал, в течение которого мы не буем получать значения с пина, мсек
   
   analogReference(DEFAULT); // отчетное напряжение 5В уже по умолчанию (можно не писать, установлено по умолчанию)
 
@@ -306,6 +312,7 @@ void loop() {
   debouncer_1.update(); // Даем объекту бибилотеки знать, что надо обновить состояние - мы вошли в новый цкил loop
   debouncer_2.update(); // Даем объекту бибилотеки знать, что надо обновить состояние - мы вошли в новый цкил loop
   debouncer_3.update(); // Даем объекту бибилотеки знать, что надо обновить состояние - мы вошли в новый цкил loop
+  debouncer_4.update(); // Даем объекту бибилотеки знать, что надо обновить состояние - мы вошли в новый цкил loop  
 //Serial.println(analogRead(analogInPin));
 //dValue = digitalRead(dPin_0);
 
@@ -330,73 +337,83 @@ void loop() {
     }
 
 // если реле датчика движение замкнуто (значение HIGH)
-  if (debouncer_2.read() == HIGH && flag_2 == true && flag_3 == 0){
+  if (debouncer_2.read() == HIGH && flag_2 == true && flag_4 == 0){
     Serial.println("Norma_D2");
     flag_2 = false;
     }
 
 // если реле датчика движения разомкнуто (значение LOW) 
-  if (debouncer_2.read() == LOW && flag_2 == false && flag_3 == 0){
+  if (debouncer_2.read() == LOW && flag_2 == false && flag_4 == 0){
     Serial.println("Alarm_D2");
     flag_2 = true;
     }
 
+  if (debouncer_3.read() == HIGH && flag_3 == true){ // если значение HIGH (реле контроля ИБП)
+    Serial.println("Norma_D3");
+    flag_3 = false;
+    }
+  
+  if (debouncer_3.read() == LOW && flag_3 == false){ // если значение LOW (реле контроля ИБП)
+    Serial.println("Alarm_D3");
+    flag_3 = true;
+    }
+
 // включаем режим мониторинга
 // в этом режиме не отправляются данные о состоянии датчика движения
-  if (debouncer_3.read() == HIGH && flag_3 == 0){
+  if (debouncer_4.read() == HIGH && flag_4 == 0){
     Serial.println("Mode_M");
-    flag_3 = 1;
+    flag_4 = 1;
     digitalWrite(LED, LOW);
   }
 
-  else if (debouncer_3.read() == LOW && flag_3 == 1){
-    flag_3 = 2;
+  else if (debouncer_4.read() == LOW && flag_4 == 1){
+    flag_4 = 2;
   }
 
 // включаем режим тревоги
 // в этом режимет отправляются данные от датчика движения
-  else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == HIGH){
+  else if (debouncer_4.read() == HIGH && flag_4 == 2 && debouncer_2.read() == HIGH){
     delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
     flag_2 = false;
-    flag_3 = 3;
+    flag_4 = 3;
     digitalWrite(LED, HIGH);
   }
 
-  else if (debouncer_3.read() == LOW && flag_3 == 3){
-    flag_3 = 0;
+  else if (debouncer_4.read() == LOW && flag_4 == 3){
+    flag_4 = 0;
     digitalWrite(LED, HIGH);
   }
 
 // если датчик движения в тревоге, контроллер не встанет на охрану
-  else if (debouncer_3.read() == HIGH && flag_3 == 2 && debouncer_2.read() == LOW){
+  else if (debouncer_4.read() == HIGH && flag_4 == 2 && debouncer_2.read() == LOW){
     Serial.println("ERROR_Mode_A");
-    flag_3 = 1;
+    flag_4 = 1;
   }
 
 // включение режима мониторинга дистанционно
-  else if (dataReady && input_Serial == "Mode_M" && flag_3 == 0){
+  else if (dataReady && input_Serial == "Mode_M" && flag_4 == 0){
     Serial.println("Mode_M");
     dataReady = false;
-    flag_3 = 2;
+    flag_4 = 2;
     digitalWrite(LED, LOW);
     }
 
 // включаем режим тревоги дистанционно
-  else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == HIGH){
+  else if (dataReady && input_Serial == "Mode_A" && flag_4 == 2 && debouncer_2.read() == HIGH){
     delay(3000); // задержка, чтобы покинуть помещение
     Serial.println("Mode_A");
     dataReady = false;
     flag_2 = false;
-    flag_3 = 0;
+    flag_4 = 0;
     digitalWrite(LED, HIGH);
     }
     
 // если датчик движения в тревоге, контроллер дистанционно не встанет на охрану
-  else if (dataReady && input_Serial == "Mode_A" && flag_3 == 2 && debouncer_2.read() == LOW){
+  else if (dataReady && input_Serial == "Mode_A" && flag_4 == 2 && debouncer_2.read() == LOW){
     Serial.println("ERROR_Mode_A");
     dataReady = false;
-    flag_3 = 1;      
+    flag_4 = 1;      
     }
 }
 
