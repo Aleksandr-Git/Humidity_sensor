@@ -293,13 +293,13 @@ void loop() {
     }
 	
 // постоянная отправка данный с датчиков влажности
-//Serial.print(analogRead(sensPin_0));
-//Serial.print("/");
-//Serial.print(analogRead(sensPin_1));
-//Serial.print("/");
-//Serial.print(analogRead(sensPin_2));
-//Serial.print("/");
-//Serial.println(analogRead(sensPin_3));
+Serial.print(analogRead(sensPin_0));
+Serial.print("/");
+Serial.print(analogRead(sensPin_1));
+Serial.print("/");
+Serial.print(analogRead(sensPin_2));
+Serial.print("/");
+Serial.println(analogRead(sensPin_3));
 
 //int a_0 = analogRead(sensPin_0);
 //int a_1 = analogRead(sensPin_1);
