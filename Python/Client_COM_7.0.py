@@ -281,9 +281,9 @@ def Start_UID_new_email():  # проверка новых писем
             print('Inet OFF')  # для тестов
             continue
 
-def Start_Inet():
-    while True:
-        inet()
+#def Start_Inet():
+#    while True:
+#        inet()
 
 thread1 = Thread(target=Start_Alarm)
 thread2 = Thread(target=Start_UID_new_email)
