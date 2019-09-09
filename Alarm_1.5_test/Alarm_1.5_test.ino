@@ -8,8 +8,8 @@
 
 #include <Thread.h> // потоки
 #include <Bounce2.h> // библиотека для обработки дребезгов контактов
-#include <OneWire.h> // библиотека для работы с протоколом 1-Wire
-#include <DallasTemperature.h> // библиотека для работы с датчиком DS18B20
+//#include <OneWire.h> // библиотека для работы с протоколом 1-Wire
+//#include <DallasTemperature.h> // библиотека для работы с датчиком DS18B20
 
 Thread soundThread = Thread(); // поток управления сиреной
 Thread sensorThread = Thread(); // поток для датчиков
