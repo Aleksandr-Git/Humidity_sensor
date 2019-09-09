@@ -12,7 +12,7 @@
 //#include <DallasTemperature.h> // библиотека для работы с датчиком DS18B20
 
 Thread soundThread = Thread(); // поток управления сиреной
-Thread sensorThread = Thread(); // поток для датчиков
+Thread sensorThread = Thread(); // поток для датчиков (РАЗОБРАТЬСЯ, НЕ ИСПОЛЬЗУЕТСЯ)
 
 // название пинов
 int sensPin_0 = A0; // аналоговый пин датчика влажности №0
