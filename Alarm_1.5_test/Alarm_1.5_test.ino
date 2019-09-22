@@ -1,3 +1,7 @@
+#include <StaticThreadController.h>
+#include <Thread.h>
+#include <ThreadController.h>
+
 // пределано под nano. датчики с контактов 0 и 1 переподключены на контакты 5 и 6
 // !! нужно устанавливать именно Arduino Thread https://soltau.ru/index.php/arduino/item/373-kak-vypolnyat-parallelnye-zadachi-threads-v-programme-dlya-arduino
 // написать комментарии
@@ -6,13 +10,18 @@
 // добавлен отдельный поток на включение зумера
 // переименованы аналоговые входы с 1 на А1 и т.д.
 
-#include <Thread.h> // потоки
+
 #include <Bounce2.h> // библиотека для обработки дребезгов контактов
-//#include <OneWire.h> // библиотека для работы с протоколом 1-Wire
-//#include <DallasTemperature.h> // библиотека для работы с датчиком DS18B20
+#include <OneWire.h> // библиотека для работы с протоколом 1-Wire
+#include <DallasTemperature.h> // библиотека для работы с датчиком DS18B20
+
+#define ONE_WIRE_BUS 3 // сигнальный провод датчика (ранее тестировалост на 5)
 
 Thread soundThread = Thread(); // поток управления сиреной
 Thread sensorThread = Thread(); // поток для датчиков (РАЗОБРАТЬСЯ, НЕ ИСПОЛЬЗУЕТСЯ)
+
+OneWire oneWire(ONE_WIRE_BUS); // создаём объект для работы с библиотекой OneWire
+DallasTemperature sensor(&oneWire); // создадим объект для работы с библиотекой DallasTemperature
 
 // название пинов
 int sensPin_0 = A0; // аналоговый пин датчика влажности №0
@@ -40,18 +49,23 @@ int countAlarm_0 = 0;
 int countAlarm_1 = 0;
 int countAlarm_2 = 0;
 int countAlarm_3 = 0;
+int countAlarm_T = 0; // счетчик тревог датчика температуры
 
 // счетчики норм датчиков влажности
 int countNorma_0 = 0;
 int countNorma_1 = 0;
 int countNorma_2 = 0;
 int countNorma_3 = 0;
+int countNorma_T = 0; // счетчик норм датчика температуры
+
+int countStart_T = 0; // счетчик старта измерения датчика температуры
 
 // состояние аналоговых шлейфов, тревога или норма
 boolean ALARM_0 = false;
 boolean ALARM_1 = false;
 boolean ALARM_2 = false;
 boolean ALARM_3 = false;
+boolean ALARM_T = false; // сотояние датчика температуры, тревога или норма
 
 // состояние цифровых шлейфов
 boolean flag_0 = true; // водной щит
@@ -63,13 +77,16 @@ int flag_4 = 3; // кнопка включения режима охраны
 // состояние звукового оповещателя
 boolean SOUND_Alarm = false;
 
-int NORMA = 50; // порог нормы 
+int NORMA = 50; // порог нормы датчиков влажности
+float NORMA_T = 27.0; // порог нормы датчика температуры
 
 static int ton = 1;  // тональность звука, Гц
 static bool soundStatus = false; // переменная для контроля состояния звука
 
 String input_Serial = ""; // строковая переменная для записи данных из серийного порта
 boolean dataReady = false; // контроль готовности принятых данных
+
+float temperature; // переменная для хранения температуры
 
 // создаем объекты библиотеки Bounce (обработка дребезга)
 Bounce debouncer_0 = Bounce();
@@ -113,6 +130,9 @@ void setup() {
 
   Serial.begin(9600); // открываем UART порт
 
+  sensor.begin(); // начинаем работу с датчиком
+  sensor.setResolution(8); // устанавливаем разрешение датчика от 9 до 12 бит
+  
   soundThread.onRun(sound); // назначаем потоку задачу
   soundThread.setInterval(500);// задаём интервал срабатывания, мсек
 }
@@ -135,9 +155,19 @@ void loop() {
     }
   }
 
-// если на любом из датчиков влажности тревога и прошло время интервала потока, запускается поток со звуком
-    if (SOUND_Alarm == true && soundThread.shouldRun()){
+// если на любом из датчиков влажности или на датчике темпреатуры тревога
+// и прошло время интервала потока, запускается поток со звуком
+  if (SOUND_Alarm == true && soundThread.shouldRun()){
     soundThread.run();
+    }
+
+  countStart_T += 1; // увеличиваем счетчик старта измерения датчика температуры
+
+// если счетчик старта измерения датчика температуры больше 300
+  if (countStart_T > 400){
+    sensor.requestTemperatures(); // отправляем запрос на измерение температуры
+    temperature = sensor.getTempCByIndex(0); // считываем данные из регистра датчика
+    countStart_T = 0;
     }
   
 // если показания датчика выше порога и система находится в состоянии нормы
@@ -171,6 +201,16 @@ void loop() {
 // если счетчик тревог не достигает необходимого значения и датчик показывает норму
    else if (analogRead(sensPin_3) < NORMA && ALARM_3 == false){ 
     countAlarm_3 = 0; // присваиваем счетчику значение 0
+    }
+
+// если показания датчика температуры выше нормы и системы находится в состоянии номы
+  if (temperature > NORMA_T && ALARM_T == false){
+    countAlarm_T += 1;// увеличиваем счетчик тревог
+    }
+
+// если счетчик тревог не достигает необходимого значения и датчик показывает норму
+  else if (temperature < NORMA_T && ALARM_T == false){
+    countAlarm_T == 0; // присваиваем счетчику значение 0
     }
 
   // если счетчик тревог датчика №0 больше
@@ -207,6 +247,15 @@ void loop() {
     ALARM_3 = true; // меняем значение переменной шлейфа
     countAlarm_3 = 0; // сбрасываем счетчик
     Serial.println("Alarm_3"); // отправляем данные по серийному порту
+    }
+
+  // если счетчик тревог датчика температуры больше
+  if (countAlarm_T > 2){
+//    digitalWrite(LED_T, HIGH); // включаем светодиод
+    SOUND_Alarm = true; // меняем значение переменной звукового ововещения  
+    ALARM_T = true; // меняем значение переменной шлейфа
+    countAlarm_T = 0; // сбрасываем счетчик
+    Serial.println("Alarm_T"); // отправляем данные по серийному порту 
     }
 
   // если показание датчика №0 ниже порога и система находится в состоянии тревоги
@@ -249,6 +298,16 @@ void loop() {
     countNorma_3 = 0; // присваиваеи счетчику значение 0
     }
 
+  // если показания датчика температуры ниже порога и система находится в состоянии тревоги
+  if (temperature < NORMA_T && ALARM_T == true){
+    countNorma_T += 1; // увеличиваем счетчик норм
+    }
+
+  // если показания датчика температуры не достиг необходимого порога и датчик показывает тревогу
+  else if (temperature > NORMA_T && ALARM_T == true){
+    countNorma_T == 0; // присваиваем счетчику значение 0
+    }
+
   // если счетчик нормы датчика №0 больше
   if (countNorma_0 > 300){ 
     digitalWrite(LEDPin_0, LOW); // выключаем светодиод
@@ -279,6 +338,14 @@ void loop() {
     ALARM_3 = false; // меняем значение переменной шлейфа
     countNorma_3 = 0; // сбрасываем счетчик
     Serial.println("Norma_3"); // отправляем данные по серийному порту
+    }
+
+  // если счетчик норм датчика температуры больше 
+  if (countNorma_T > 2){
+//    digitalWrite(LED_T, LOW); // включаем светодиод
+    ALARM_T = false; // меняем значение переменной шлейфа
+    countNorma_T = 0; // сбрасываем счетчик
+    Serial.println("Norma_T"); // отправляем данные по серийному порту
     }
 
 	// если звук включен, выключаем его по нажатию кнопки
